@@ -1,0 +1,6 @@
+@BioTranslatorApi_HostAddress = http://localhost:5263
+
+GET {{BioTranslatorApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
