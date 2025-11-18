@@ -12,7 +12,7 @@ public class TextTranslation : ITextTranslation
     private readonly IOptionsTranslationBusiness _optionsTranslationBusiness;
     private readonly IBioSystemsEncryptor _encryptor;
 
-    public TextTranslation(ITextTranslationBusiness textTranslationBusiness, 
+    public TextTranslation(ITextTranslationBusiness textTranslationBusiness,
         IOptionsTranslationBusiness optionsTranslationBusiness,
         IBioSystemsEncryptor encryptor)
     {
@@ -21,28 +21,26 @@ public class TextTranslation : ITextTranslation
         _encryptor = encryptor;
     }
 
-    public async Task<IEnumerable<TranslationDomain>> Translate(string text, string to, string from)
+    public async Task<IEnumerable<TranslationDomain>> Translate(IEnumerable<string> toTranslate, string to, string from)
     {
         return await _textTranslationBusiness.Translate(
-            text,
-            await TranslateToSupportedLanguage(to),
+            toTranslate,
+            await ValidateSupportedLanguages(to),
             from,
             AppSettingsValue.TextApi(_encryptor),
             AppSettingsValue.KeyApi(_encryptor));
     }
 
-    public async Task<IEnumerable<TranslationDomain>> Translate(string text, string to)
+    public async Task<IEnumerable<TranslationDomain>> Translate(IEnumerable<string> toTranslate, string to)
     {
         return await _textTranslationBusiness.Translate(
-            text,
-            await TranslateToSupportedLanguage(to),
+            toTranslate,
+            await ValidateSupportedLanguages(to),
             AppSettingsValue.TextApi(_encryptor),
             AppSettingsValue.KeyApi(_encryptor));
     }
 
-    #region Private
-
-    private async Task<IEnumerable<string>> TranslateToSupportedLanguage(string to)
+    public async Task<IEnumerable<string>> ValidateSupportedLanguages(string to)
     {
         if (string.IsNullOrEmpty(to)) return [];
 
@@ -66,5 +64,4 @@ public class TextTranslation : ITextTranslation
         return validLanguages;
     }
 
-    #endregion
 }

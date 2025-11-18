@@ -1,6 +1,7 @@
 ﻿using Domain;
 using Domain.Models;
 using Newtonsoft.Json;
+using System.Linq;
 using System.Text;
 
 namespace BusinessTranslator;
@@ -11,16 +12,16 @@ public class TextTranslationBusiness : ITextTranslationBusiness
     //Route scheme: "translate?api-version=3.0&to=fr&to=zu" //Auto detect from (origin) language
     private const string RouteBase = "translate?api-version=3.0";
 
-    public async Task<IEnumerable<TranslationDomain>> Translate(string text, IEnumerable<string> to, string from, string endPoint, string key)
+    public async Task<IEnumerable<TranslationDomain>> Translate(IEnumerable<string> toTranslate, IEnumerable<string> to, string from, string endPoint, string key)
     {
         string route = BuildRoute(to, from);
-        return await TranslateViaExternalApi(text, endPoint, key, route);
+        return await TranslateViaExternalApi(toTranslate, endPoint, key, route);
     }
 
-    public async Task<IEnumerable<TranslationDomain>> Translate(string text, IEnumerable<string> to, string endPoint, string key)
+    public async Task<IEnumerable<TranslationDomain>> Translate(IEnumerable<string> toTranslate, IEnumerable<string> to, string endPoint, string key)
     {
         string route = BuildRoute(to);
-        return await TranslateViaExternalApi(text, endPoint, key, route);
+        return await TranslateViaExternalApi(toTranslate, endPoint, key, route);
     }
 
 
@@ -42,15 +43,15 @@ public class TextTranslationBusiness : ITextTranslationBusiness
         return route;
     }
 
-    private string BuildRequestBody(string text)
+    private string BuildRequestBody(IEnumerable<string> toTranslate)
     {
-        object[] body = new object[] { new { Text = text } };
+        var body = toTranslate.Select(t => new { Text = t }).ToArray();
         return JsonConvert.SerializeObject(body);
     }
 
-    private async Task<IEnumerable<TranslationDomain>> TranslateViaExternalApi(string text, string endPoint, string key, string route)
+    private async Task<IEnumerable<TranslationDomain>> TranslateViaExternalApi(IEnumerable<string> toTranslate, string endPoint, string key, string route)
     {
-        string requestBody = BuildRequestBody(text);
+        string requestBody = BuildRequestBody(toTranslate);
 
         using (var client = new HttpClient())
         using (var request = new HttpRequestMessage())
@@ -74,26 +75,27 @@ public class TextTranslationBusiness : ITextTranslationBusiness
             var jsonArray = JsonConvert.DeserializeObject<dynamic>(result);
             if (jsonArray != null && jsonArray.Count > 0)
             {
-                var firstResult = jsonArray[0];
-                if (firstResult?.translations != null)
+                var translations = new List<TranslationDomain>();
+                foreach (var itemResult in jsonArray)
                 {
-                    var translations = new List<TranslationDomain>();
-
-                    foreach (var translationItem in firstResult.translations)
+                    if (itemResult?.translations != null)
                     {
-                        var translatedText = translationItem.text?.ToString() ?? string.Empty;
-                        var targetLanguage = translationItem.to?.ToString() ?? string.Empty;
-
-                        TranslationDomain translation = new()
+                        foreach (var translationItem in itemResult.translations)
                         {
-                            Text = translatedText,
-                            Language = targetLanguage
-                        };
-                        translations.Add(translation);
-                    }
+                            var translatedText = translationItem.text?.ToString() ?? string.Empty;
+                            var targetLanguage = translationItem.to?.ToString() ?? string.Empty;
 
-                    return translations;
+                            TranslationDomain translation = new()
+                            {
+                                Text = translatedText,
+                                Language = targetLanguage
+                            };
+                            translations.Add(translation);
+                        }
+                    }                    
                 }
+
+                return translations;
             }
             return [];
         }
