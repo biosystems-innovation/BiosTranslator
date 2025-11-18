@@ -41,12 +41,12 @@ namespace BioTranslatorApi.Controllers
         /// </summary>
         /// <param name="toTranslate"></param>
         /// <returns></returns>
-        [HttpPost()]
+        [HttpPost("")]
         public async Task<IEnumerable<TranslationApi>> Translate(List<string> toTranslate)
         {
             string to = AppSettingsValue.To;
             string from = AppSettingsValue.From;
-            var translations = await _textTranslation.Translate(toTranslate, to, from);
+            var translations = await _textTranslation.Translate(toTranslate, to, from, true);
 
             return TranslationApi.MapFrom(translations);
         }
@@ -58,10 +58,10 @@ namespace BioTranslatorApi.Controllers
         /// <param name="toTranslate"></param>
         /// <param name="to"></param>
         /// <returns></returns>
-        [HttpPost("/{to}")]
+        [HttpPost("{to}")]
         public async Task<IEnumerable<TranslationApi>> TranslateAutoDetect(List<string> toTranslate, string to)
         {
-            var translations = await _textTranslation.Translate(toTranslate, to);
+            var translations = await _textTranslation.Translate(toTranslate, to, true);
             return TranslationApi.MapFrom(translations);
         }
 
@@ -75,7 +75,7 @@ namespace BioTranslatorApi.Controllers
         [HttpPost("{to}/{from}")]
         public async Task<IEnumerable<TranslationApi>> TranslateExplicit(List<string> toTranslate, string to, string from)
         {
-            var translations = await _textTranslation.Translate(toTranslate, to, from);
+            var translations = await _textTranslation.Translate(toTranslate, to, from, true);
             return TranslationApi.MapFrom(translations);
         }
 

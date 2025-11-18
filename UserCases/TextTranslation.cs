@@ -1,4 +1,5 @@
-﻿using BusinessTranslator;
+﻿using System.Xml;
+using BusinessTranslator;
 using Domain;
 using Domain.Models;
 using Infrastructure.Encriptors;
@@ -21,23 +22,29 @@ public class TextTranslation : ITextTranslation
         _encryptor = encryptor;
     }
 
-    public async Task<IEnumerable<TranslationDomain>> Translate(IEnumerable<string> toTranslate, string to, string from)
+    public async Task<IEnumerable<TranslationDomain>> Translate(IEnumerable<string> toTranslate, string to, string from, bool sortByLanguage = false)
     {
-        return await _textTranslationBusiness.Translate(
+        var validSupportedLanguages = (await ValidateSupportedLanguages(to)).ToList();
+        var translations = await _textTranslationBusiness.Translate(
             toTranslate,
-            await ValidateSupportedLanguages(to),
+            validSupportedLanguages,
             from,
             AppSettingsValue.TextApi(_encryptor),
             AppSettingsValue.KeyApi(_encryptor));
+
+        return ApplyOptionalSorting(sortByLanguage, translations, validSupportedLanguages);
     }
 
-    public async Task<IEnumerable<TranslationDomain>> Translate(IEnumerable<string> toTranslate, string to)
+    public async Task<IEnumerable<TranslationDomain>> Translate(IEnumerable<string> toTranslate, string to, bool sortByLanguage = false)
     {
-        return await _textTranslationBusiness.Translate(
+        var validSupportedLanguages = (await ValidateSupportedLanguages(to)).ToList();
+        var translations = await _textTranslationBusiness.Translate(
             toTranslate,
-            await ValidateSupportedLanguages(to),
+            validSupportedLanguages,
             AppSettingsValue.TextApi(_encryptor),
             AppSettingsValue.KeyApi(_encryptor));
+
+        return ApplyOptionalSorting(sortByLanguage, translations, validSupportedLanguages);
     }
 
     public async Task<IEnumerable<string>> ValidateSupportedLanguages(string to)
@@ -63,5 +70,19 @@ public class TextTranslation : ITextTranslation
 
         return validLanguages;
     }
+
+    #region Private
+    private static IEnumerable<TranslationDomain> ApplyOptionalSorting(bool sortByLanguage, IEnumerable<TranslationDomain> translations,
+        List<string> validSupportedLanguages)
+    {
+        if (sortByLanguage)
+        {
+            translations = translations
+                .OrderBy(x => validSupportedLanguages.IndexOf(x.Language)).ToList();
+        }
+        return translations;
+    }
+
+    #endregion
 
 }

@@ -6,21 +6,26 @@ public interface ITextTranslation
 {
     /// <summary>
     /// Translates the given collection of texts from the specified language to the specified language
+    ///
+    /// Optionally output can be sorted by language
     /// </summary>
     /// <param name="toTranslate"></param>
     /// <param name="to"></param>
     /// <param name="from"></param>
+    /// <param name="sortByLanguage"></param>
     /// <returns></returns>
-    Task<IEnumerable<TranslationDomain>> Translate(IEnumerable<string> toTranslate, string to, string from);
+    Task<IEnumerable<TranslationDomain>> Translate(IEnumerable<string> toTranslate, string to, string from, bool sortByLanguage = false);
 
     /// <summary>
     /// Translates the given collection of texts to the specified language
+    ///
+    /// Optionally output can be sorted by language
     /// From: autodetect
     /// </summary>
     /// <param name="toTranslate"></param>
     /// <param name="to"></param>
     /// <returns></returns>
-    Task<IEnumerable<TranslationDomain>> Translate(IEnumerable<string> toTranslate, string to);
+    Task<IEnumerable<TranslationDomain>> Translate(IEnumerable<string> toTranslate, string to, bool sortByLanguage = false);
 
     /// <summary>
     /// Validates the requested languages against the supported languages
