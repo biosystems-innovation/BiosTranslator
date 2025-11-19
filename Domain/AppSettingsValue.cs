@@ -36,4 +36,15 @@ public class AppSettingsValue
         return encryptor.Decrypt(document);
     }
 
+    public static string UrlApi()
+    {
+        return Configuration.GetSection("Host:Url").Value ?? "https://localhost";
+    }
+
+    public static int PortApi()
+    {
+        string port = Configuration.GetSection("Host:Port").Value ?? "5623";
+        return int.Parse(port);
+    }
+
 }

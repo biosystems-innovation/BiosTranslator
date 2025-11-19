@@ -21,6 +21,13 @@ builder.Services.AddTransient<ITextTranslationBusiness, TextTranslationBusiness>
 //AppSettings.json Configuration
 ApplicationConfigurator.SetupConfigurationRoot();
 
+////Read configuration TranslatorApi
+//var url = ApplicationConfigurator.GetApiUrl();
+//var port = ApplicationConfigurator.GetApiPort();
+
+////Configure url and port
+//builder.WebHost.UseUrls($"{url}:{port}");
+
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

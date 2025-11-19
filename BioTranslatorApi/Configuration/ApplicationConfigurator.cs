@@ -12,4 +12,14 @@ public class ApplicationConfigurator
 
         AppSettingsValue.Configuration = configurationBuilder.Build();
     }
+
+    public static string GetApiUrl()
+    {
+        return AppSettingsValue.UrlApi();
+    }
+    
+    public static int GetApiPort()
+    {
+        return AppSettingsValue.PortApi();
+    }
 }
